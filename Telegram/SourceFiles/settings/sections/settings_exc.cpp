@@ -9,6 +9,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include "settings/settings_common_session.h"
 #include "settings/settings_builder.h"
+#include "settings/sections/settings_main.h"
 #include "lang/lang_keys.h"
 #include "ui/widgets/buttons.h"
 #include "ui/wrap/vertical_layout.h"
@@ -21,6 +22,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 namespace Settings {
 namespace {
+
+using namespace Builder;
 
 class Exc : public Section<Exc> {
 public:
