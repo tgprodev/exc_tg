@@ -1659,6 +1659,8 @@ PRIVATE
     platform/mac/tray_mac.mm
     platform/mac/webauthn_mac.mm
     platform/mac/window_title_mac.mm
+    platform/mac/sparkle_mac.h
+    platform/mac/sparkle_mac.mm
     platform/mac/touchbar/items/mac_formatter_item.h
     platform/mac/touchbar/items/mac_formatter_item.mm
     platform/mac/touchbar/items/mac_pinned_chats_item.h
@@ -1786,6 +1788,8 @@ PRIVATE
     settings/settings_credits_graphics.h
     settings/settings_experimental.cpp
     settings/settings_experimental.h
+    settings/sections/settings_exc.cpp
+    settings/sections/settings_exc.h
     settings/sections/settings_folders.cpp
     settings/sections/settings_folders.h
     settings/sections/settings_global_ttl.cpp
@@ -2254,6 +2258,43 @@ else()
     generate_dbus(Telegram org.freedesktop.portal. XdpBackground ${third_party_loc}/xdg-desktop-portal/data/org.freedesktop.portal.Background.xml)
     generate_dbus(Telegram org.freedesktop.portal. FlatpakPortal ${src_loc}/platform/linux/org.freedesktop.portal.Flatpak.xml)
     generate_dbus(Telegram org.freedesktop. XdgNotifications ${src_loc}/platform/linux/org.freedesktop.Notifications.xml)
+endif()
+
+option(DESKTOP_APP_DISABLE_SPARKLE "Disable Sparkle auto-update framework" ON)
+
+# Sparkle Ed25519 public key (substituted into Telegram.plist as SUPublicEDKey).
+if (DEFINED ENV{SPARKLE_ED25519_PUBLIC_KEY})
+    set(SPARKLE_ED25519_PUBLIC_KEY "$ENV{SPARKLE_ED25519_PUBLIC_KEY}")
+elseif (NOT DEFINED SPARKLE_ED25519_PUBLIC_KEY)
+    set(SPARKLE_ED25519_PUBLIC_KEY "")
+endif()
+
+if (NOT DESKTOP_APP_DISABLE_SPARKLE AND APPLE)
+    if (DEFINED ENV{SPARKLE_PATH})
+        set(SPARKLE_DIR "$ENV{SPARKLE_PATH}")
+    else()
+        set(SPARKLE_DIR "${libs_loc}/Sparkle")
+    endif()
+
+    # Scope TDESKTOP_USE_SPARKLE + framework search path to sparkle_mac.mm ONLY,
+    # so ccache hashes for the other ~1480 source files stay valid.
+    set_source_files_properties(
+        ${src_loc}/platform/mac/sparkle_mac.mm
+        PROPERTIES
+            COMPILE_DEFINITIONS TDESKTOP_USE_SPARKLE
+            COMPILE_OPTIONS "-F${SPARKLE_DIR}"
+    )
+
+    target_link_options(Telegram PRIVATE -F${SPARKLE_DIR})
+    target_link_libraries(Telegram PRIVATE "-framework Sparkle")
+
+    # Embed Sparkle.framework into Exctg.app/Contents/Frameworks/.
+    add_custom_command(TARGET Telegram POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:Telegram>/../Frameworks
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${SPARKLE_DIR}/Sparkle.framework"
+            "$<TARGET_FILE_DIR:Telegram>/../Frameworks/Sparkle.framework"
+    )
 endif()
 
 if (build_macstore)

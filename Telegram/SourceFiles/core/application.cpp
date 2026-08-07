@@ -38,6 +38,10 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "base/platform/base_platform_info.h"
 #include "platform/platform_specific.h"
 #include "platform/platform_integration.h"
+
+#ifdef Q_OS_MAC
+#include "platform/mac/sparkle_mac.h"
+#endif // Q_OS_MAC
 #include "history/history.h"
 #include "apiwrap.h"
 #include "api/api_updates.h"
@@ -386,6 +390,9 @@ void Application::run() {
 
 	DEBUG_LOG(("Application Info: window created..."));
 
+#ifdef Q_OS_MAC
+	Platform::InitSparkle();
+#endif // Q_OS_MAC
 	startDomain();
 	startTray();
 

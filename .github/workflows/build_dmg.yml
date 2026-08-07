@@ -58,6 +58,21 @@ jobs:
           echo "RNNOISE=`curl -sSL --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/xiph/rnnoise/git/refs/heads/master | jq -r .object.sha`" >> $GITHUB_ENV
           echo "WEBRTC=`curl -sSL --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/desktop-app/tg_owt/git/refs/heads/master | jq -r .object.sha`" >> $GITHUB_ENV
 
+      - name: Download Sparkle.
+        run: |
+          SPARKLE_VER="2.9.2"
+          curl -sL "https://github.com/sparkle-project/Sparkle/releases/download/${SPARKLE_VER}/Sparkle-for-Swift-Package-Manager.zip" -o sparkle.zip
+          SPARKLE_EXTRACT=$LibrariesPath/local/sparkle-extract
+          mkdir -p $SPARKLE_EXTRACT
+          unzip -q sparkle.zip -d $SPARKLE_EXTRACT
+
+          SPARKLE_FW=$LibrariesPath/local/Sparkle
+          mkdir -p $SPARKLE_FW
+          cp -a $SPARKLE_EXTRACT/Sparkle.xcframework/macos-arm64_x86_64/Sparkle.framework $SPARKLE_FW/
+
+          echo "SPARKLE_PATH=$SPARKLE_FW" >> $GITHUB_ENV
+          echo "SPARKLE_BIN=$SPARKLE_EXTRACT/bin" >> $GITHUB_ENV
+
       - name: RNNoise cache.
         id: cache-rnnoise
         uses: actions/cache@v5
@@ -160,6 +175,7 @@ jobs:
           CCACHE_SLOPPINESS: include_file_mtime,include_file_ctime,time_macros,pch_defines,file_stat_matches
           CCACHE_COMPILERCHECK: "string:${{ env.CCACHE_COMPILER_STRING }}"
           CCACHE_NOHASHDIR: "true"
+          SPARKLE_ED25519_PUBLIC_KEY: ${{ secrets.SPARKLE_ED25519_PUBLIC_KEY }}
         run: |
           cd $REPO_NAME
           export CMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH$(find $LibrariesPath/local -mindepth 1 -maxdepth 1 -type d -exec printf ':%s' {} +)"
@@ -175,7 +191,7 @@ jobs:
             -D TDESKTOP_API_HASH=9952ccf3124c8fa7835d9b8e091dfb4a \
             -D DESKTOP_APP_DISABLE_AUTOUPDATE=ON \
             -D DESKTOP_APP_DISABLE_CRASH_REPORTS=ON \
-            -D DESKTOP_APP_DISABLE_SPARKLE=ON
+            -D DESKTOP_APP_DISABLE_SPARKLE=OFF
 
           ninja -C build -j $(sysctl -n hw.logicalcpu)
 
@@ -198,6 +214,33 @@ jobs:
           mkdir -p dmg
           cp -R Exctg.app dmg/
           hdiutil create -volname "Exctg" -srcfolder dmg -ov -format UDZO "Exctg.dmg"
+
+      - name: Generate Sparkle appcast.
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_ED25519_PRIVATE_KEY }}
+        run: |
+          cd $REPO_NAME
+          if [ -z "$SPARKLE_PRIVATE_KEY" ]; then
+            echo "SPARKLE_ED25519_PRIVATE_KEY not set, skipping appcast"
+            exit 0
+          fi
+          SIGN_TOOL="$SPARKLE_BIN/sign_update"
+          if [ ! -x "$SIGN_TOOL" ]; then
+            echo "sign_update not found at $SIGN_TOOL, skipping appcast"
+            exit 0
+          fi
+          SIGNATURE=$(echo "$SPARKLE_PRIVATE_KEY" | "$SIGN_TOOL" --ed-key-file - build/Exctg.dmg)
+          VERSION=$(grep 'AppVersionStrSmall' Telegram/build/version 2>/dev/null | awk '{print $2}' || echo "0.0.0")
+          BUILD_VER="${VERSION}.${{ github.run_number }}"
+          PUBDATE=$(date -R)
+          printf '<?xml version="1.0" encoding="utf-8"?>\n<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">\n  <channel>\n    <title>Exctg Updates</title>\n    <item>\n      <title>Exctg %s (build %s)</title>\n      <sparkle:version>%s</sparkle:version>\n      <sparkle:shortVersionString>%s</sparkle:shortVersionString>\n      <pubDate>%s</pubDate>\n      <enclosure\n        url="https://github.com/tgprodev/exc_tg/releases/download/nightly/Exctg.dmg"\n        %s\n        type="application/octet-stream" />\n    </item>\n  </channel>\n</rss>\n' \
+            "$VERSION" "${{ github.run_number }}" "$BUILD_VER" "$VERSION" "$PUBDATE" "$SIGNATURE" > appcast.xml
+          echo "Generated appcast.xml: version=$BUILD_VER display=$VERSION"
+          git config user.name "tgpro-ci"
+          git config user.email "ci@tgpro.dev"
+          git add appcast.xml
+          git commit -m "ci: update appcast.xml [skip ci]" || true
+          git push origin dev || true
 
       - name: Publish Release.
         run: |

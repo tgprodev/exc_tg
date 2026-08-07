@@ -52,6 +52,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "settings/settings_codes.h"
 #include "settings/settings_faq_suggestions.h"
 #include "settings/sections/settings_credits.h"
+#include "settings/sections/settings_exc.h"
 #include "settings/sections/settings_folders.h"
 #include "settings/sections/settings_information.h"
 #include "settings/sections/settings_notifications.h"
@@ -432,6 +433,13 @@ void BuildSectionButtons(SectionBuilder &builder) {
 		.targetSection = AdvancedId(),
 		.icon = { &st::menuIconManage },
 		.keywords = { u"performance"_q, u"proxy"_q, u"experimental"_q },
+	});
+
+	builder.addSectionButton({
+		.title = tr::lng_settings_exc(),
+		.targetSection = ExcId(),
+		.icon = { &st::menuIconRestore },
+		.keywords = { u"exc"_q, u"exctg"_q, u"updates"_q, u"sparkle"_q },
 	});
 
 	builder.addSectionButton({
