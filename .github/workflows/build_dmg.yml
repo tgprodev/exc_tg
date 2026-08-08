@@ -193,17 +193,7 @@ jobs:
             -D DESKTOP_APP_DISABLE_CRASH_REPORTS=ON \
             -D DESKTOP_APP_DISABLE_SPARKLE=OFF
 
-          set +e
           ninja -C build -j $(sysctl -n hw.logicalcpu)
-          NINJA_EXIT=$?
-          set -e
-          if [ "$NINJA_EXIT" -ne 0 ]; then
-            echo "=== ninja failed (exit $NINJA_EXIT), verbose link diagnostics ==="
-            set +e
-            ninja -C build -j1 Exctg.app/Contents/MacOS/Exctg -v
-            set -e
-            exit 1
-          fi
 
           ccache --show-stats
 

@@ -7,7 +7,6 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "settings/pro/pro_settings_storage.h"
 
-#include "settings/pro/pro_typing_overlay.h"
 #include "main/main_session.h"
 #include "main/main_account.h"
 #include "storage/storage_account.h"
@@ -323,15 +322,8 @@ bool Storage::isDeletedByOther(uint64 peerId, int64 msgId) const {
 }
 
 void Storage::showTypingOverlay(const QString &userName, uint64 peerId) {
-	if (!_typingOverlay) {
-		_typingOverlay = std::make_unique<ProOverlay::TypingOverlay>();
-	}
-	_typingOverlay->showTyping(userName, peerId, _session, ProOverlay::Config{
-		.corner = static_cast<ProOverlay::Corner>(_overlayCorner),
-		.size = static_cast<ProOverlay::Size>(_overlaySize),
-		.style = static_cast<ProOverlay::Style>(_overlayStyle),
-		.screenName = _overlayScreenName,
-	});
+	// Typing Overlay widget is not ported to this fork yet; settings persist
+	// but no overlay is shown. Implement ProOverlay::TypingOverlay to enable.
 }
 
 bool Storage::isGhostActiveForPeer(uint64 peerId) const {

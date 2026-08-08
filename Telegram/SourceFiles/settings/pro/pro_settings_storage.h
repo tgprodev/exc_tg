@@ -14,7 +14,6 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include <vector>
 
 namespace Main { class Session; }
-namespace ProOverlay { class TypingOverlay; }
 
 namespace ProSettings {
 
@@ -157,7 +156,6 @@ private:
 	int _overlaySize = 1;
 	int _overlayStyle = 0;
 	QString _overlayScreenName;
-	std::unique_ptr<ProOverlay::TypingOverlay> _typingOverlay;
 
 	bool _aiMemoryEnabled = false;
 	QString _deepseekApiToken;
