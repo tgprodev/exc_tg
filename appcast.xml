@@ -3,13 +3,13 @@
   <channel>
     <title>Exctg Updates</title>
     <item>
-      <title>Exctg 7.0.9 (build 7)</title>
-      <sparkle:version>7.0.9.7</sparkle:version>
+      <title>Exctg 7.0.9 (build 24)</title>
+      <sparkle:version>7.0.9.24</sparkle:version>
       <sparkle:shortVersionString>7.0.9</sparkle:shortVersionString>
-      <pubDate>Fri, 07 Aug 2026 13:11:24 +0000</pubDate>
+      <pubDate>Sat, 08 Aug 2026 08:22:05 +0000</pubDate>
       <enclosure
         url="https://github.com/tgprodev/exc_tg/releases/download/nightly/Exctg.dmg"
-        sparkle:edSignature="xf7+Cb+rWKBB5XLRv4Qn/BCC2BT6O+7Ydn91Z2K7/XsN985jXn2BEb/ko9qg/6f3r9BIcVlaq02jMohwlCKoAg==" length="155755411"
+        sparkle:edSignature="fi1Qu79KUQgHInhcr6/Tk7DTjF4AtGc6dONg4prM2Haw1cgIiEABY+G8GQqye1C6jfcmJV0qKPhULkrfmCXhBQ==" length="155801123"
         type="application/octet-stream" />
     </item>
   </channel>
