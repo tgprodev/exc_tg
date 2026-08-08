@@ -81,6 +81,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "iv/editor/iv_editor_session.h"
 #include "iv/iv_rich_message_serializer.h"
 #include "main/main_session.h"
+#include "settings/pro/pro_settings_storage.h"
 #include "main/main_session_settings.h"
 #include "main/main_account.h"
 #include "ui/boxes/confirm_box.h"

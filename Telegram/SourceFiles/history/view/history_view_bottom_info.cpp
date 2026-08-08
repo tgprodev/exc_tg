@@ -27,6 +27,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "chat_helpers/emoji_interactions.h"
 #include "core/click_handler_types.h"
 #include "main/main_session.h"
+#include "settings/pro/pro_settings_storage.h"
 #include "lottie/lottie_icon.h"
 #include "data/data_channel.h"
 #include "data/data_session.h"

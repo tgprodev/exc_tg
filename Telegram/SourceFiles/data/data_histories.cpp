@@ -24,6 +24,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "base/unixtime.h"
 #include "base/random.h"
 #include "main/main_session.h"
+#include "settings/pro/pro_settings_storage.h"
 #include "window/notifications_manager.h"
 #include "history/history.h"
 #include "history/history_item.h"

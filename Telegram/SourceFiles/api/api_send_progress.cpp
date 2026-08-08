@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "api/api_send_progress.h"
 
 #include "main/main_session.h"
+#include "settings/pro/pro_settings_storage.h"
 #include "history/history.h"
 #include "data/data_peer.h"
 #include "data/data_user.h"
