@@ -194,8 +194,11 @@ jobs:
             -D DESKTOP_APP_DISABLE_SPARKLE=OFF
 
           ninja -C build -j $(sysctl -n hw.logicalcpu) || {
-            echo "=== ninja failed, re-running link step with verbose output ==="
-            ninja -C build -j1 Exctg.app/Contents/MacOS/Exctg -v 2>&1 | tail -100 || true
+            echo "=== ninja failed, capturing verbose link diagnostics ==="
+            ninja -C build -j1 Exctg.app/Contents/MacOS/Exctg -v > /tmp/link_err.txt 2>&1 || true
+            echo "===== LINKER OUTPUT START ====="
+            cat /tmp/link_err.txt
+            echo "===== LINKER OUTPUT END ====="
             exit 1
           }
 
