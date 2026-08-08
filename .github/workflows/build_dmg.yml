@@ -193,7 +193,11 @@ jobs:
             -D DESKTOP_APP_DISABLE_CRASH_REPORTS=ON \
             -D DESKTOP_APP_DISABLE_SPARKLE=OFF
 
-          ninja -C build -j $(sysctl -n hw.logicalcpu)
+          ninja -C build -j $(sysctl -n hw.logicalcpu) || {
+            echo "=== ninja failed, re-running link step with verbose output ==="
+            ninja -C build -j1 Exctg.app/Contents/MacOS/Exctg -v 2>&1 | tail -100 || true
+            exit 1
+          }
 
           ccache --show-stats
 
