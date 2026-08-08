@@ -89,6 +89,9 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "main/main_app_config.h"
 #include "main/main_session.h"
 #include "main/main_session_settings.h"
+#include "settings/pro/pro_settings_storage.h"
+#include "ui/layers/generic_box.h"
+#include "ui/widgets/labels.h"
 #include "mainwidget.h"
 #include "iv/iv_rich_message_html_export.h"
 #include "menu/menu_item_download_files.h"
@@ -3018,7 +3021,47 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 					}
 					_widget->editMessage(item, selection);
 				}
-			}, &st::menuIconEdit);
+				}, &st::menuIconEdit);
+		}
+		// Pro: "Edit History" entry for messages with captured edit versions.
+		{
+			auto &pro = session->proStorage();
+			const auto pid = item->history()->peer->id.value;
+			if (pro.hasEditHistory(pid, item->id.bare)) {
+				const auto msgId = item->id.bare;
+				const auto peerId = pid;
+				_menu->addAction(u"Edit History"_q, crl::guard(controller, [=] {
+					auto &pro = controller->session().proStorage();
+					const auto versions = pro.editHistory(peerId, msgId);
+					controller->show(Box([=](not_null<Ui::GenericBox*> box) {
+						box->setTitle(rpl::single(u"Edit History"_q));
+						const auto content = box->verticalLayout();
+						if (versions.empty()) {
+							content->add(
+								object_ptr<Ui::FlatLabel>(
+									content,
+									u"No edit history captured."_q,
+									st::defaultFlatLabel));
+						}
+						for (auto i = 0; i < int(versions.size()); ++i) {
+							const auto &v = versions[i];
+							const auto title = (i == 0)
+								? u"Original"_q
+								: u"Edit #%1"_q.arg(i);
+							const auto when = QDateTime::fromSecsSinceEpoch(
+								v.date).toString(u"dd.MM.yyyy hh:mm"_q);
+							content->add(
+								object_ptr<Ui::FlatLabel>(
+									content,
+									u"%1 (%2)\n%3"_q.arg(title, when, v.text),
+									st::defaultFlatLabel));
+						}
+						box->addButton(tr::lng_box_ok(), [=] {
+							box->closeBox();
+						});
+					}));
+				}), &st::menuIconEdit);
+			}
 		}
 		if (session->factchecks().canEdit(item)) {
 			const auto text = item->factcheckText();

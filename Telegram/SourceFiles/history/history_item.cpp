@@ -32,6 +32,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "storage/file_upload.h"
 #include "storage/storage_shared_media.h"
 #include "main/main_session.h"
+#include "settings/pro/pro_settings_storage.h"
 #include "main/main_app_config.h"
 #include "main/main_session_settings.h"
 #include "menu/menu_ttl_validator.h"
@@ -2298,6 +2299,21 @@ void HistoryItem::applyEdition(HistoryMessageEdition &&edition) {
 		setServiceText(std::move(serviceText));
 		addToSharedMediaIndex();
 	} else {
+		// Pro: capture edit history before overwriting the text.
+		if (edition.editDate) {
+			auto &pro = history()->session().proStorage();
+			const auto pid = history()->peer->id.value;
+			if (pro.saveEditsEnabled()
+				&& !ranges::contains(pro.editExceptionPeerIds(), pid)) {
+				if (!pro.hasEditHistory(pid, id.bare)) {
+					pro.addEditVersion(pid, id.bare,
+						originalText().text, int64(date()));
+				}
+				pro.addEditVersion(pid, id.bare,
+					edition.textWithEntities.text,
+					int64(edition.editDate));
+			}
+		}
 		setText(std::move(updatedText));
 		addToSharedMediaIndex();
 	}

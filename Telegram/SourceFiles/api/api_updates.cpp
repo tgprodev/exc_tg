@@ -1012,6 +1012,17 @@ void Updates::updateOnline(crl::time lastNonIdleTime, bool gotOtherOffline) {
 		}
 	}
 	auto ms = crl::now();
+	// Ghost mode: suppress online status updates unless instant-online is armed.
+	{
+		const auto &pro = _session->proStorage();
+		if (pro.ghostNoOnline() && pro.ghostEnabled()) {
+			const auto allowOnline = pro.ghostInstantOnline()
+				&& pro.hasAnyInteracted();
+			if (!allowOnline) {
+				isOnline = false;
+			}
+		}
+	}
 	if (isOnline != _lastWasOnline
 		|| (isOnline && _lastSetOnline + config.onlineUpdatePeriod <= ms)
 		|| (isOnline && gotOtherOffline)) {

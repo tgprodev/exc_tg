@@ -112,6 +112,14 @@ void SendProgressManager::send(const Key &key, int progress) {
 	if (skipRequest(key)) {
 		return;
 	}
+	// Ghost mode: suppress typing indicator for ghost-active peers.
+	if (key.type == SendProgressType::Typing) {
+		const auto &pro = _session->proStorage();
+		if (pro.ghostNoTyping()
+			&& pro.isGhostActiveForPeer(key.history->peer->id.value)) {
+			return;
+		}
+	}
 	using Type = SendProgressType;
 	const auto action = [&]() -> MTPsendMessageAction {
 		const auto p = MTP_int(progress);

@@ -713,6 +713,18 @@ void Histories::sendReadRequests() {
 void Histories::sendReadRequest(not_null<History*> history, State &state) {
 	Expects(state.willReadTill > state.sentReadTill);
 
+	// Ghost mode: suppress read receipts unless read-on-interact arms a one-shot.
+	auto &pro = session().proStorage();
+	if (pro.ghostNoRead()
+		&& pro.isGhostActiveForPeer(history->peer->id.value)) {
+		if (!pro.ghostReadOnInteract()
+			|| !pro.consumePeerInteracted(history->peer->id.value)) {
+			state.willReadTill = 0;
+			state.willReadWhen = 0;
+			return;
+		}
+	}
+
 	const auto tillId = state.sentReadTill = base::take(state.willReadTill);
 	state.willReadWhen = 0;
 	state.sentReadDone = false;

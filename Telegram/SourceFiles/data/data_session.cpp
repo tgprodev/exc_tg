@@ -3107,11 +3107,22 @@ void Session::processMessagesDeleted(
 
 	auto toDestroy = std::vector<not_null<HistoryItem*>>();
 	auto historiesToCheck = base::flat_set<not_null<History*>>();
+	auto &pro = _session->proStorage();
+	const auto saveDeleted = pro.saveDeletedEnabled()
+		&& !ranges::contains(pro.exceptionPeerIds(), peerId.value);
 	for (const auto &messageId : data) {
 		const auto i = list ? list->find(messageId.v) : Messages::iterator();
 		if (list && i != list->end()) {
-			const auto history = i->second->history();
-			toDestroy.push_back(i->second);
+			const auto item = i->second;
+			const auto history = item->history();
+			if (saveDeleted
+				&& !pro.isDeletedByOther(peerId.value, item->id.bare)) {
+				pro.addDeletedMessage(peerId.value, item->id.bare,
+					item->originalText().text, item->from()->name(),
+					int64(item->date()));
+			} else {
+				toDestroy.push_back(item);
+			}
 			historiesToCheck.emplace(history);
 		} else if (affected) {
 			affected->unknownMessageDeleted(messageId.v);
@@ -3133,10 +3144,21 @@ void Session::processMessagesDeleted(
 void Session::processNonChannelMessagesDeleted(const QVector<MTPint> &data) {
 	auto toDestroy = std::vector<not_null<HistoryItem*>>();
 	auto historiesToCheck = base::flat_set<not_null<History*>>();
+	auto &pro = _session->proStorage();
 	for (const auto &messageId : data) {
 		if (const auto item = nonChannelMessage(messageId.v)) {
 			const auto history = item->history();
-			toDestroy.push_back(item);
+			const auto pid = history->peer->id.value;
+			const auto saveDeleted = pro.saveDeletedEnabled()
+				&& !ranges::contains(pro.exceptionPeerIds(), pid);
+			if (saveDeleted
+				&& !pro.isDeletedByOther(pid, item->id.bare)) {
+				pro.addDeletedMessage(pid, item->id.bare,
+					item->originalText().text, item->from()->name(),
+					int64(item->date()));
+			} else {
+				toDestroy.push_back(item);
+			}
 			historiesToCheck.emplace(history);
 		}
 	}

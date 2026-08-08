@@ -513,6 +513,10 @@ void BottomInfo::layoutDateText() {
 		? QString()
 		: (_data.flags & Data::Flag::Imported)
 		? (date + ' ' + tr::lng_imported(tr::now))
+		: (_data.flags & Data::Flag::DeletedByOther)
+		? (name.isEmpty()
+			? (u"[del] "_q + date)
+			: (u"[del] "_q + name + afterAuthor))
 		: name.isEmpty()
 		? date
 		: (name + afterAuthor);
@@ -738,6 +742,11 @@ BottomInfo::Data BottomInfoDataFromMessage(not_null<Message*> message) {
 		if (item->isSilent()) {
 			result.flags |= Flag::Silent;
 		}
+	}
+	// Pro: mark messages saved from deletion by others.
+	if (item->history()->session().proStorage().isDeletedByOther(
+			item->history()->peer->id.value, item->id.bare)) {
+		result.flags |= Flag::DeletedByOther;
 	}
 	if (!forwarded) {
 		return result;

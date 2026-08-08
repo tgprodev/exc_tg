@@ -56,6 +56,10 @@ namespace HistoryView::Reactions {
 class CachedIconFactory;
 } // namespace HistoryView::Reactions
 
+namespace ProSettings {
+class Storage;
+} // namespace ProSettings
+
 namespace Storage {
 class DownloadManagerMtproto;
 class Uploader;
@@ -212,6 +216,9 @@ public:
 	[[nodiscard]] SessionSettings &settings() const {
 		return *_settings;
 	}
+	[[nodiscard]] ProSettings::Storage &proStorage() const {
+		return *_proStorage;
+	}
 	[[nodiscard]] SendAsPeers &sendAsPeers() const {
 		return *_sendAsPeers;
 	}
@@ -305,6 +312,7 @@ private:
 	const not_null<Account*> _account;
 
 	const std::unique_ptr<SessionSettings> _settings;
+	const std::unique_ptr<ProSettings::Storage> _proStorage;
 	const std::unique_ptr<Data::Changes> _changes;
 	const std::unique_ptr<ApiWrap> _api;
 	const std::unique_ptr<Api::Updates> _updates;

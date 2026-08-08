@@ -1435,9 +1435,14 @@ void ApiWrap::markContentsRead(
 	auto channelMarkedIds = base::flat_map<
 		not_null<ChannelData*>,
 		QVector<MTPint>>();
+	const auto &pro = _session->proStorage();
 	markedIds.reserve(items.size());
 	for (const auto &item : items) {
 		if (!item->markContentsRead(true) || !item->isRegular()) {
+			continue;
+		}
+		if (pro.ghostNoRead()
+			&& pro.isGhostActiveForPeer(item->history()->peer->id.value)) {
 			continue;
 		}
 		if (const auto channel = item->history()->peer->asChannel()) {
@@ -1463,6 +1468,11 @@ void ApiWrap::markContentsRead(
 
 void ApiWrap::markContentsRead(not_null<HistoryItem*> item) {
 	if (!item->markContentsRead(true) || !item->isRegular()) {
+		return;
+	}
+	const auto &pro = _session->proStorage();
+	if (pro.ghostNoRead()
+		&& pro.isGhostActiveForPeer(item->history()->peer->id.value)) {
 		return;
 	}
 	const auto ids = MTP_vector<MTPint>(1, MTP_int(item->id));
@@ -3734,6 +3744,16 @@ void ApiWrap::sendAction(const SendAction &action) {
 	if (!action.options.scheduled
 		&& !action.options.shortcutId
 		&& !action.replaceMediaOf) {
+		// Ghost mode: arm read-on-interact / instant-online one-shots on send.
+		auto &pro = _session->proStorage();
+		if (pro.isGhostActiveForPeer(action.history->peer->id.value)) {
+			if (pro.ghostReadOnInteract() && pro.ghostNoRead()) {
+				pro.markPeerInteracted(action.history->peer->id.value);
+			}
+			if (pro.ghostInstantOnline() && pro.ghostNoOnline()) {
+				pro.markPeerInteracted(action.history->peer->id.value);
+			}
+		}
 		const auto topicRootId = action.replyTo.topicRootId;
 		const auto topic = topicRootId
 			? action.history->peer->forumTopicFor(topicRootId)

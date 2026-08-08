@@ -44,6 +44,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/components/top_peers.h"
 #include "settings/settings_faq_suggestions.h"
 #include "settings/settings_recent_searches.h"
+#include "settings/pro/pro_settings_storage.h"
 #include "data/data_session.h"
 #include "data/data_changes.h"
 #include "data/data_user.h"
@@ -102,6 +103,7 @@ Session::Session(
 : _userId(user.c_user().vid())
 , _account(account)
 , _settings(std::move(settings))
+, _proStorage(std::make_unique<ProSettings::Storage>(this))
 , _changes(std::make_unique<Data::Changes>(this))
 , _api(std::make_unique<ApiWrap>(this))
 , _updates(std::make_unique<Api::Updates>(this))

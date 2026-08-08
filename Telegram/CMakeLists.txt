@@ -1835,6 +1835,10 @@ PRIVATE
     settings/sections/settings_shortcuts.h
     settings/sections/settings_websites.cpp
     settings/sections/settings_websites.h
+    settings/pro/pro_settings_storage.cpp
+    settings/pro/pro_settings_storage.h
+    settings/pro/pro_typing_overlay.cpp
+    settings/pro/pro_typing_overlay.h
     storage/details/storage_file_utilities.cpp
     storage/details/storage_file_utilities.h
     storage/details/storage_settings_scheme.cpp
