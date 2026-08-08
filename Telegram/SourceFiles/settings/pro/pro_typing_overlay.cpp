@@ -13,9 +13,15 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 //
 #include "settings/pro/pro_typing_overlay.h"
 
+#include <QPaintEvent>
+#include <QMouseEvent>
+
 namespace ProOverlay {
 
-TypingOverlay::TypingOverlay() = default;
+TypingOverlay::TypingOverlay() : QWidget(nullptr) {
+	setAttribute(Qt::WA_TransparentForMouseEvents);
+	hide();
+}
 
 void TypingOverlay::showTyping(
 		const QString &userName,
@@ -23,6 +29,26 @@ void TypingOverlay::showTyping(
 		Main::Session *session,
 		const Config &config) {
 	// No-op stub: overlay rendering not implemented in this fork yet.
+}
+
+void TypingOverlay::paintEvent(QPaintEvent *e) {
+	// No-op stub.
+}
+
+void TypingOverlay::mousePressEvent(QMouseEvent *e) {
+	// No-op stub.
+}
+
+void TypingOverlay::hideOverlay() {
+	hide();
+}
+
+void TypingOverlay::updatePosition(const Config &config) {
+	// No-op stub.
+}
+
+void TypingOverlay::applySize(Size size) {
+	// No-op stub.
 }
 
 } // namespace ProOverlay
