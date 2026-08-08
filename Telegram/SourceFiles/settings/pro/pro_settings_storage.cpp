@@ -432,9 +432,8 @@ void Storage::setPeerRole(uint64 peerId, const QString &role) {
 }
 
 void Storage::load() {
-	const auto data = _session->account().local().readPref<QByteArray>(
-		kPrefKey,
-		QByteArray());
+	const auto data = _session->account().local().readPrefGeneric(
+		kPrefKey).value_or(QByteArray());
 	if (data.isEmpty()) {
 		return;
 	}
@@ -668,7 +667,7 @@ void Storage::save() {
 		obj["peerRoles"] = roles;
 	}
 
-	_session->account().local().writePref<QByteArray>(
+	_session->account().local().writePrefGeneric(
 		kPrefKey,
 		QJsonDocument(obj).toJson(QJsonDocument::Compact));
 }
